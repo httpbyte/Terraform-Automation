@@ -32,7 +32,6 @@ resource "aws_internet_gateway" "myapp-igw" {
     }
 }
 
-
 resource "aws_default_route_table" "main_rtb" {
     default_route_table_id = aws_vpc.myapp-vpc.default_route_table_id
 
@@ -50,9 +49,28 @@ resource "aws_security_group" "myapp-sg" {
     vpc_id = aws_vpc.myapp-vpc.id
 
     ingress {
-        from_port = 22
-        to_port   = 22
-        protocol = "tcp"
+        from_port   = 22
+        to_port     = 22
+        protocol    = "tcp"
         cidr_blocks = [var.ip_address]
+    }
+
+     ingress {
+        from_port   = 8080
+        to_port     = 8080
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    egress {
+        from_port   = 0
+        to_port     = 0
+        protocol    = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+        prefix_list_ids = []
+    }
+
+    tags = {
+       Name: "${var.env_prefix}-sg"
     }
 }
