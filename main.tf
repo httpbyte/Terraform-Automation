@@ -24,7 +24,6 @@ resource "aws_subnet" "myapp-subnet-1" {
     }
 }
 
-
 resource "aws_route_table" "myapp-route-table" {
     vpc_id = aws_vpc.myapp-vpc.id
     route {
@@ -41,4 +40,9 @@ resource "aws_internet_gateway" "myapp-igw" {
     tags = {
       Name: "${var.env_prefix}-igw"
     }
+}
+
+resource "aws_route_table_association" "a-rtb-subnet" {
+    subnet_id = aws_subnet.myapp-subnet-1.id
+    route_table_id = aws_route_table.myapp-route-table.id
 }
