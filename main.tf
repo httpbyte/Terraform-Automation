@@ -7,6 +7,7 @@ variable vpc_cidr_block {}
 variable subnet_cidr_block {}
 variable avail_zone {}
 variable env_prefix {}
+variable ip_address {}
 
 resource "aws_vpc" "myapp-vpc" {
     cidr_block = var.vpc_cidr_block
@@ -41,5 +42,17 @@ resource "aws_default_route_table" "main_rtb" {
     }
     tags = {
        Name: "${var.env_prefix}-main-rtb"
+    }
+}
+
+resource "aws_security_group" "myapp-sg" {
+    name = "myapp-sg"
+    vpc_id = aws_vpc.myapp-vpc.id
+
+    ingress {
+        from_port = 22
+        to_port   = 22
+        protocol = "tcp"
+        cidr_blocks = [var.ip_address]
     }
 }
