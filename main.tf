@@ -1,24 +1,24 @@
 
 provider "aws" {
-    region = "us-east-1"
-}
+    region = "us-east-1"  # region set to US east coast (N Virginia Location)
+} 
 
-variable vpc_cidr_block {}
+variable vpc_cidr_block {}  
 variable subnet_cidr_block {}
-variable avail_zone {}
-variable env_prefix {}
-variable ip_address {}
-variable instance_type {}
-variable "my_public_key" {}
+variable avail_zone {}      
+variable env_prefix {}       
+variable ip_address {}       # Internal IP address
+variable instance_type {}    # EC2 t3.micro instance
+variable "my_public_key" {}  # internal SSH key on localhost 
 
-resource "aws_vpc" "myapp-vpc" {
+resource "aws_vpc" "myapp-vpc" { # virtual private network module
     cidr_block = var.vpc_cidr_block
       tags = {
         Name: "${var.env_prefix}-vpc"
     }
 }
 
-resource "aws_subnet" "myapp-subnet-1" {
+resource "aws_subnet" "myapp-subnet-1" { # subnet module for VPC
     vpc_id = aws_vpc.myapp-vpc.id
     cidr_block = var.subnet_cidr_block
     availability_zone = var.avail_zone
@@ -27,14 +27,14 @@ resource "aws_subnet" "myapp-subnet-1" {
     }
 }
 
-resource "aws_internet_gateway" "myapp-igw" {
+resource "aws_internet_gateway" "myapp-igw" {  # gateway module for VPC
     vpc_id = aws_vpc.myapp-vpc.id
     tags = {
       Name: "${var.env_prefix}-igw"
     }
 }
 
-resource "aws_default_route_table" "main_rtb" {
+resource "aws_default_route_table" "main_rtb" {  # route table for VPC to allow egree/ingress
     default_route_table_id = aws_vpc.myapp-vpc.default_route_table_id
 
     route {
@@ -46,7 +46,7 @@ resource "aws_default_route_table" "main_rtb" {
     }
 }
 
-resource "aws_default_security_group" "default-sg" {
+resource "aws_default_security_group" "default-sg" {   # SEC group to open/close ports on route table
     vpc_id = aws_vpc.myapp-vpc.id
 
     ingress {
@@ -56,7 +56,7 @@ resource "aws_default_security_group" "default-sg" {
         cidr_blocks = [var.ip_address]
     }
 
-     ingress {
+    ingress {
         from_port   = 8080
         to_port     = 8080
         protocol    = "tcp"
@@ -76,7 +76,7 @@ resource "aws_default_security_group" "default-sg" {
     }
 }
 
-data "aws_ami" "latest-amazon-linux-image" {
+data "aws_ami" "latest-amazon-linux-image" {   # loading up amazon linux image
     most_recent = true
     owners = ["amazon"]
     filter {
@@ -89,12 +89,12 @@ data "aws_ami" "latest-amazon-linux-image" {
     }
 }
 
-resource "aws_key_pair" "ssh-key" {
+resource "aws_key_pair" "ssh-key" { 
     key_name = "server-key"
     public_key = var.my_public_key
 }
 
-resource "aws_instance" "myapp-server" {
+resource "aws_instance" "myapp-server" {    # creating EC2 instance and provisioning on AWS
     ami = data.aws_ami.latest-amazon-linux-image.id
     instance_type = var.instance_type
 
