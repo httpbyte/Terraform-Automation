@@ -9,4 +9,3 @@ modules/**/.terraform.lock.hcl
 modules/**/terraform.tfstate
 modules/**/terraform.tfstate.backup
 
-modules/subnet/.terraform/*
