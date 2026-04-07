@@ -9,7 +9,7 @@ resource "aws_vpc" "myapp-vpc" { # virtual private network module
     }
 }
 
-module "myapp_subnet" {
+module "myapp_subnet" {     # subnet module
     source = "./modules/subnet"
     subnet_cidr_block = var.subnet_cidr_block
     avail_zone = var.avail_zone
@@ -18,7 +18,7 @@ module "myapp_subnet" {
     default_route_table_id = aws_vpc.myapp-vpc.default_route_table_id
 } 
  
-module "myapp_server" {
+module "myapp_server" {     # webserver module
     source = "./modules/webserver"
     vpc_id = aws_vpc.myapp-vpc.id
     ip_address = var.ip_address
