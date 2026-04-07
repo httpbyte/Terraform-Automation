@@ -3,3 +3,8 @@ terraform.tfstate
 terraform.tfstate.backup
 *.tfvars
 *.tfstate.*
+*.log
+modules/**/.terraform/*
+modules/**/.terraform.lock.hcl
+modules/**/terraform.tfstate
+modules/**/terraform.tfstate.backup
