@@ -2,22 +2,25 @@ provider "aws" {
     region = "us-east-1"  # region set to US east coast (N Virginia Location)
 }
 
-resource "aws_vpc" "myapp-vpc" { # virtual private network module
-    cidr_block = var.vpc_cidr_block
-      tags = {
-        Name: "${var.env_prefix}-vpc"
-    }
+module "vpc" {
+  source = "terraform-aws-modules/vpc/aws"
+
+  name = "my-vpc"
+  cidr = "10.0.0.0/16"
+
+  azs             = ["us-east-1a", "us-east-1b", "us-east-1c"]
+  private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+  public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
+
+  enable_nat_gateway = true
+  enable_vpn_gateway = true
+
+  tags = {
+    Terraform = "true"
+    Environment = "dev"
+  }
 }
 
-module "myapp_subnet" {     # subnet module
-    source = "./modules/subnet"
-    subnet_cidr_block = var.subnet_cidr_block
-    avail_zone = var.avail_zone
-    env_prefix = var.env_prefix
-    vpc_id = aws_vpc.myapp-vpc.id
-    default_route_table_id = aws_vpc.myapp-vpc.default_route_table_id
-} 
- 
 module "myapp_server" {     # webserver module
     source = "./modules/webserver"
     vpc_id = aws_vpc.myapp-vpc.id
