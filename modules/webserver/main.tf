@@ -1,6 +1,7 @@
-resource "aws_default_security_group" "default-sg" {   # SEC group to open/close ports on route table
+resource "aws_security_group" "myapp-sg" {   # SEC group to open/close ports on route table
     vpc_id = var.vpc_id
-
+    name = "${var.env_prefix}-myapp-sg"
+    
     ingress {
         from_port   = 22
         to_port     = 22
@@ -51,7 +52,7 @@ resource "aws_instance" "myapp-server" {    # creating EC2 instance and provisio
     instance_type = var.instance_type
 
     subnet_id = var.subnet_id
-    vpc_security_group_ids = [aws_default_security_group.default-sg.id]
+    vpc_security_group_ids = [aws_security_group.myapp-sg.id]
     availability_zone = var.avail_zone
 
     associate_public_ip_address = true
@@ -59,29 +60,29 @@ resource "aws_instance" "myapp-server" {    # creating EC2 instance and provisio
 
     user_data = file("entry-script.sh")  # pre loaded script to install and start webserver on EC2 instance
 
-    connection {
+    connection {       # connection block to connect to EC2 instance and run provisioners
         type = "ssh"
         host = self.public_ip
         user = "ec2-user"
         private_key = var.my_private_key
     }
 
-    provisioner "file" {
+    provisioner "file" {   # provisioner to copy entry script to EC2 instance
         source = "entry-script.sh"
         destination = "/home/ec2-user/entry-script.sh"
     }
     
-    provisioner "remote-exec" {
+    provisioner "remote-exec" {  # provisioner to run the entry script on EC2 instance to install and start webserver
         inline = [
             "chmod +x /home/ec2-user/entry-script.sh",
             "bash /home/ec2-user/entry-script.sh"
         ]
     }
 
-    provisioner "local-exec" {
+    provisioner "local-exec" {  # provisioner to run a local command after the EC2 instance is created and provisioned
         command = "echo ${self.public_ip} > test.txt"
     }
-        
+         
     tags = {
        Name: "${var.env_prefix}-server"
     }
